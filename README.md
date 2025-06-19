@@ -1,0 +1,2 @@
+# Sommerfeld
+Discord bot
