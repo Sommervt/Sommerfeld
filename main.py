@@ -912,9 +912,37 @@ async def kill(ctx, pid: int):
 
 
 #moderacion de mensajes
+# Cargar palabras
+def cargar_palabras():
+    with open("badwords.json", "r") as f:
+        return json.load(f)
 
+# Guardar palabras
+def guardar_palabras(palabras):
+    with open("badwords.json", "w") as f:
+        json.dump(palabras, f)
 
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def addbadword(ctx, palabra):
+    palabras = cargar_palabras()
+    if palabra.lower() not in palabras:
+        palabras.append(palabra.lower())
+        guardar_palabras(palabras)
+        await ctx.send(f"Palabra '{palabra}' añadida.")
+    else:
+        await ctx.send("Esa palabra ya está en la lista.")
 
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def removebadword(ctx, palabra):
+    palabras = cargar_palabras()
+    if palabra.lower() in palabras:
+        palabras.remove(palabra.lower())
+        guardar_palabras(palabras)
+        await ctx.send(f"Palabra '{palabra}' eliminada.")
+    else:
+        await ctx.send("Esa palabra no está en la lista.")
 
 #PROCESO DE ARRANQUE DEL BOT.
 bot.run(DISCORD_BOT_TOKEN)
