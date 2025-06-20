@@ -1,0 +1,7 @@
+{
+    "command": "comandos",
+    "description": "Muestra los comandos personalizados disponibles en JSON.",
+    "enabled": true,
+    "response": "Estos son tus comandos personalizados:\n\n- !redescreator \n\nPuedes editar este mensaje desde el archivo comandos.json en la carpeta commands."
+  }
+  
