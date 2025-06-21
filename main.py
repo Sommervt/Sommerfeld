@@ -6,6 +6,7 @@ import os
 import pygetwindow as gw
 import random
 import datetime
+import subprocess
 import asyncio
 import psutil
 import json
@@ -911,38 +912,88 @@ async def kill(ctx, pid: int):
 
 
 
-#moderacion de mensajes
-# Cargar palabras
-def cargar_palabras():
-    with open("badwords.json", "r") as f:
-        return json.load(f)
+# Asumiendo que moderador.exe y badwords.json están en la misma carpeta que este script
+CARPETA_BASE = os.path.dirname(os.path.abspath(__file__))
+RUTA_RUST = os.path.join(CARPETA_BASE, "moderador.exe")
+JSON_FILE = os.path.join(CARPETA_BASE, "badwords.json")
 
-# Guardar palabras
+def cargar_palabras():
+    try:
+        with open(JSON_FILE, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
 def guardar_palabras(palabras):
-    with open("badwords.json", "w") as f:
-        json.dump(palabras, f)
+    with open(JSON_FILE, "w") as f:
+        json.dump(palabras, f, indent=2)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addbadword(ctx, palabra):
+    palabra = palabra.lower()
     palabras = cargar_palabras()
-    if palabra.lower() not in palabras:
-        palabras.append(palabra.lower())
+    if palabra not in palabras:
+        palabras.append(palabra)
         guardar_palabras(palabras)
-        await ctx.send(f"Palabra '{palabra}' añadida.")
+        await ctx.send(f"✅ Palabra '{palabra}' añadida.")
     else:
-        await ctx.send("Esa palabra ya está en la lista.")
+        await ctx.send("⚠️ Esa palabra ya está en la lista.")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removebadword(ctx, palabra):
+    palabra = palabra.lower()
     palabras = cargar_palabras()
-    if palabra.lower() in palabras:
-        palabras.remove(palabra.lower())
+    if palabra in palabras:
+        palabras.remove(palabra)
         guardar_palabras(palabras)
-        await ctx.send(f"Palabra '{palabra}' eliminada.")
+        await ctx.send(f"✅ Palabra '{palabra}' eliminada.")
     else:
-        await ctx.send("Esa palabra no está en la lista.")
+        await ctx.send("⚠️ Esa palabra no está en la lista.")
+
+def moderar_mensaje(mensaje: str) -> str:
+    print(f"Ejecutando moderador.exe con mensaje: {mensaje}")
+    if not os.path.exists(RUTA_RUST):
+        print(f"⚠️ No se encontró el ejecutable: {RUTA_RUST}")
+        return "permitido"
+    try:
+        proceso = subprocess.Popen(
+            [RUTA_RUST],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding='utf-8',
+            cwd=CARPETA_BASE
+        )
+        salida, err = proceso.communicate(mensaje)
+        print(f"Salida Rust: {salida.strip()}")
+        if err:
+            print(f"Error Rust: {err.strip()}")
+        return salida.strip()
+    except Exception as e:
+        print(f"⚠️ Error al ejecutar moderador.exe: {e}")
+        return "permitido"
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    print(f"Mensaje recibido: {message.content}")
+    resultado = moderar_mensaje(message.content)
+    print(f"Resultado moderación: {resultado}")
+
+    if resultado == "bloqueado":
+        print(f"Borrando mensaje de {message.author} por palabra prohibida.")
+        await message.delete()
+        await message.channel.send(
+            f"🚫 {message.author.mention}, tu mensaje contenía palabras prohibidas.",
+            delete_after=5
+        )
+
+    await bot.process_commands(message)
 
 #PROCESO DE ARRANQUE DEL BOT.
 bot.run(DISCORD_BOT_TOKEN)
