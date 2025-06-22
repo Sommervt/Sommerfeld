@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Vision General
 Sommerfeld es un bot completamente personalizable, lo que significa que puedes ponerle lo que quieras, su codificacion es muy sensilla y facil de modificar. Este es un bot autoalojado, lo que significa que necesitará para alojar y mantener su propia instancia. Puedes convertir a Sommerfeld en un bot de administración, un bot para mejorar la experiencia con la pc, o incluso poder jugar con el/
 
@@ -8,5 +7,9 @@ Sommerfeld esta hecho en su mayoria en python, archivos .txt, y json, lo que lo 
 
 Sommerfeld se encarga de ser Tu asistente personal.
 =======
-# Comandos:
+ Comandos:
+ >[!TIP]
+ >Los comandos se encuentran en la carpeta "instrucciones y notas"
+
+pero estos son algunos interesantes 
 
