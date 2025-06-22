@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import os
+import re
+import threading
 import pygetwindow as gw
 import random
 import datetime
@@ -25,6 +27,9 @@ import struct
 import itertools
 import ctypes
 from ctypes import wintypes
+import pyperclip
+
+
 
 
 #DISCORD TOKEN (EL TOKEN QUE OBTIENES EN EL PORTAL DE CREADORES DE DISCORD, CAMBIA ESTE VALOR EN token.txt)
@@ -52,7 +57,6 @@ intents.message_content = True
 intents.guilds = True 
 intents.members = True
 
-intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=["!", "$"], intents=intents)
                    
 # EVENT BOT ON (EVENTO DE ENCENDIDO)
@@ -66,7 +70,7 @@ async def on_ready():
     try:
          # Sincronizar los comandos slash con Discord 
         synced = await bot.tree.sync()
-        print(f"Se han sincronizado {len(synced)} comandos slash (/).")
+        print(f"Se han sincronizado {len(synced)} comandos slash (Sommerfeld).")
     except Exception as e:
         print(f"Error al sincronizar comandos slash: {e}")
     print(f"{bot.user.name} está en linea.")
@@ -912,7 +916,7 @@ async def kill(ctx, pid: int):
 
 
 
-# Asumiendo que moderador.exe y badwords.json están en la misma carpeta que este script
+# moderator
 CARPETA_BASE = os.path.dirname(os.path.abspath(__file__))
 RUTA_RUST = os.path.join(CARPETA_BASE, "moderador.exe")
 JSON_FILE = os.path.join(CARPETA_BASE, "badwords.json")
