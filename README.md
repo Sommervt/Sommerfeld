@@ -38,4 +38,4 @@ Y algo muy interesante es su moderacion, detecta palabras ofensivas y es complet
 $addbadword,
 $removebadword
 
-Sommerfeld sigue en desarrollo, actualmente en la version 1.0.1 y actualizandose
+Sommerfeld sigue en desarrollo, actualmente en la version 1.0.1 y actualizandose continuamente.
