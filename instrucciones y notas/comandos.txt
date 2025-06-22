@@ -64,26 +64,6 @@ $rol <usuario> <rol> - Asigna un rol a un usuario
 
 $dltrol
 
-$diamantes
-
-$prgts
-
-$prgtsstats
-
-$waif
-
-$waif10
-
-$vwfadmin
-
-$gtdiam
-
-$rmdiam
-
-$rbcoold
-
-$inventario
-
 $brillo
 
 $volumen
@@ -92,4 +72,7 @@ $off
 
 $rboot
 
---ATT: Sommerfeld.
+$monitor
+
+stopall
+-ATT: Sommerfeld.
