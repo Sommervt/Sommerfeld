@@ -37,3 +37,5 @@ $rboot,
 Y algo muy interesante es su moderacion, detecta palabras ofensivas y es completamente configurable desde discord con:
 $addbadword,
 $removebadword
+
+Sommerfeld sigue en desarrollo, actualmente en la version 1.0.1
