@@ -11,5 +11,27 @@ Sommerfeld se encarga de ser Tu asistente personal.
  >[!TIP]
  >Los comandos se encuentran en la carpeta "instrucciones y notas"
 
-pero estos son algunos interesantes 
+pero estos son algunos interesantes:
 
+$kick
+$ban
+$clear <número>
+$mute @usuario
+$unmute @usuario
+$rol
+$dltrol
+/delete_after  
+/clearchannel  
+/avatar
+/avatarid
+
+>[!WARNING]
+$brillo
+$monitor
+$stopall
+$volumen 
+$off
+$rboot
+
+# Moderacion
+Y algo muy interesante es su moderacion, detecta palabras ofensivas y es completamente configurable desde discord.
