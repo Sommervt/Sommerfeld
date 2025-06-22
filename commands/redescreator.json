@@ -1,0 +1,7 @@
+{
+    "command": "redescreator",
+    "description": "Muestra los enlaces del creador del bot.",
+    "enabled": true,
+"response": "Este bot fue creado por **Sommer**.\n [Repositorio de Sommer](https://github.com/Sommervt)"
+  }
+  
