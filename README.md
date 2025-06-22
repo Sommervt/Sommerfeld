@@ -13,25 +13,27 @@ Sommerfeld se encarga de ser Tu asistente personal.
 
 pero estos son algunos interesantes:
 
-$kick
-$ban
-$clear <número>
-$mute @usuario
-$unmute @usuario
-$rol
-$dltrol
-/delete_after  
-/clearchannel  
-/avatar
-/avatarid
+$kick,
+$ban,
+$clear <número>,
+$mute @usuario,
+$unmute @usuario,
+$rol,
+$dltrol,
+/delete_after,  
+/clearchannel,  
+/avatar,
+/avatarid,
 
 >[!WARNING]
-$brillo
-$monitor
-$stopall
-$volumen 
-$off
-$rboot
+$brillo,
+$monitor,
+$stopall,
+$volumen,
+$off,
+$rboot,
 
 # Moderacion
-Y algo muy interesante es su moderacion, detecta palabras ofensivas y es completamente configurable desde discord.
+Y algo muy interesante es su moderacion, detecta palabras ofensivas y es completamente configurable desde discord con:
+$addbadword,
+$removebadword
