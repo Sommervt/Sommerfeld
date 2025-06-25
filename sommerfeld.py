@@ -33,19 +33,19 @@ import pyperclip
 
 
 #DISCORD TOKEN (EL TOKEN QUE OBTIENES EN EL PORTAL DE CREADORES DE DISCORD, CAMBIA ESTE VALOR EN token.txt)
-TOKEN_FILE = "token.txt"
+TOKEN = "token.txt"
 
-if not os.path.exists(TOKEN_FILE):
-    print(f"[ERROR] No se encontró el archivo '{TOKEN_FILE}'.")
+if not os.path.exists(TOKEN):
+    print(f"[ERROR] No se encontró el archivo '{TOKEN}'.")
     print("Por favor, crea el archivo y coloca dentro tu token de Discord.")
     time.sleep(5)
     sys.exit(1)
 
-with open(TOKEN_FILE, "r", encoding="utf-8") as f:
+with open(TOKEN, "r", encoding="utf-8") as f:
     DISCORD_BOT_TOKEN = f.read().strip()
 
 if not DISCORD_BOT_TOKEN:
-    print(f"[ERROR] El archivo '{TOKEN_FILE}' está vacío.")
+    print(f"[ERROR] El archivo '{TOKEN}' está vacío.")
     time.sleep(5)
     sys.exit(1)
 
@@ -152,6 +152,12 @@ async def delete_after(interaction: discord.Interaction, message_id: str):
         
         await interaction.followup.send(f"Hubo un error al intentar borrar los mensajes: {e}", ephemeral=True)
 
+
+
+
+
+
+#
 @bot.tree.command(name="clearchannel", description="Elimina y recrea el canal actual.")
 async def clearchannel(interaction: discord.Interaction):
     """Elimina el canal actual y lo recrea con el mismo nombre, categoría y permisos."""
@@ -917,9 +923,9 @@ async def kill(ctx, pid: int):
 
 
 # moderator
-CARPETA_BASE = os.path.dirname(os.path.abspath(__file__))
-RUTA_RUST = os.path.join(CARPETA_BASE, "moderador.exe")
-JSON_FILE = os.path.join(CARPETA_BASE, "badwords.json")
+cpt = os.path.dirname(os.path.abspath(__file__))
+moderator = os.path.join(cpt, "moderador.exe")
+JSON_FILE = os.path.join(cpt, "badwords.json")
 
 def cargar_palabras():
     try:
@@ -958,18 +964,18 @@ async def removebadword(ctx, palabra):
 
 def moderar_mensaje(mensaje: str) -> str:
     print(f"Ejecutando moderador.exe con mensaje: {mensaje}")
-    if not os.path.exists(RUTA_RUST):
-        print(f"⚠️ No se encontró el ejecutable: {RUTA_RUST}")
+    if not os.path.exists(moderator):
+        print(f"⚠️ No se encontró el ejecutable: {moderator}")
         return "permitido"
     try:
         proceso = subprocess.Popen(
-            [RUTA_RUST],
+            [moderator],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             encoding='utf-8',
-            cwd=CARPETA_BASE
+            cwd=cpt
         )
         salida, err = proceso.communicate(mensaje)
         print(f"Salida Rust: {salida.strip()}")
