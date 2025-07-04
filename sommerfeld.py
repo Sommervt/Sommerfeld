@@ -32,7 +32,7 @@ import pyperclip
 
 
 
-#DISCORD TOKEN (EL TOKEN QUE OBTIENES EN EL PORTAL DE CREADORES DE DISCORD, CAMBIA ESTE VALOR EN token.txt)
+#DISCORD TOKEN
 TOKEN = "token.txt"
 
 if not os.path.exists(TOKEN):
@@ -64,11 +64,10 @@ bot = commands.Bot(command_prefix=["!", "$"], intents=intents)
 async def on_ready():
 
     await bot.change_presence(
-        status=discord.Status.idle, #PUEDES PONER LO QUE SEA
-        activity=discord.Game(name="Help.") #PUEDES PONER LO QUE SEA
+        status=discord.Status.online,
+        activity=discord.Game(name="Help.")
     )
     try:
-         # Sincronizar los comandos slash con Discord 
         synced = await bot.tree.sync()
         print(f"Se han sincronizado {len(synced)} comandos slash (Sommerfeld).")
     except Exception as e:
@@ -152,27 +151,20 @@ async def delete_after(interaction: discord.Interaction, message_id: str):
         
         await interaction.followup.send(f"Hubo un error al intentar borrar los mensajes: {e}", ephemeral=True)
 
-
-
-
-
-
-#
+#clearchannel
 @bot.tree.command(name="clearchannel", description="Elimina y recrea el canal actual.")
 async def clearchannel(interaction: discord.Interaction):
     """Elimina el canal actual y lo recrea con el mismo nombre, categoría y permisos."""
     try:
         old_channel = interaction.channel
         channel_name = old_channel.name
-        category = old_channel.category  # Guarda la categoría
-        overwrites = old_channel.overwrites  # Guarda los permisos
+        category = old_channel.category
+        overwrites = old_channel.overwrites 
 
         await interaction.response.defer(ephemeral=True)
 
-        # Eliminar el canal original
         await old_channel.delete()
 
-        # Crear el nuevo canal con la misma categoría y permisos
         new_channel = await interaction.guild.create_text_channel(
             name=channel_name,
             category=category,
@@ -184,6 +176,7 @@ async def clearchannel(interaction: discord.Interaction):
         await interaction.followup.send("No tengo permisos para eliminar y recrear el canal.", ephemeral=True)
     except discord.HTTPException as e:
         await interaction.followup.send(f"Hubo un error al intentar eliminar y recrear el canal: {e}", ephemeral=True)
+
 # /AVATARID
 @bot.tree.command(name="avatarid", description="Obtén el avatar de un usuario usando su ID.")
 @app_commands.describe(user_id="El ID del usuario cuyo avatar deseas ver.")
@@ -205,8 +198,8 @@ async def avatar_id(interaction: discord.Interaction, user_id: str):
     except discord.HTTPException as e:
         await interaction.response.send_message(f"Hubo un error al obtener el avatar: {e}", ephemeral=True)
 
-# /RULETAZO
 
+# /RULETAZO
 @bot.tree.command(name="ruletazo", description="Juega a la ruleta rusa eliminando participantes hasta que queden los ganadores.")
 @app_commands.describe(
     participantes="Menciona a los usuarios que participarán en el juego.",
@@ -324,7 +317,6 @@ async def userinfo(interaction: discord.Interaction, user: discord.Member):
 
     await interaction.response.send_message(embed=embed)
 
-
 # /BOTINFO
 @bot.tree.command(name="botinfo", description="Muestra información sobre el bot.")
 async def bot_info(interaction: discord.Interaction):
@@ -396,6 +388,7 @@ async def on_message(message):
 
 
 #COMANDOS CON PREFIJO "$" (ESTOS COMANDOS NO SE VEN EN DISCORD, SON CONSIDERADOS OCULTOS).
+
 # $bateria
 @bot.command()
 async def bateria(ctx):
@@ -491,7 +484,7 @@ async def ban(ctx, member: discord.Member = None, *, reason=None):
     
     await ctx.send(f"{ban_message}\n{dm_message}")
 
-# Función para eliminar decimales cuando no son necesarios
+
 def format_result(result):
     if result.is_integer():
         return int(result)
@@ -858,7 +851,6 @@ async def procesos(ctx, action: str = None):
         procesos_tasks[ctx.author.id] = task
         return
 
-    # action == "stop"
     task = procesos_tasks.get(ctx.author.id, None)
     if task is not None and not task.done():
         task.cancel()
@@ -891,13 +883,12 @@ async def stopall(ctx):
         await ctx.send("⚠️ No hay monitoreos activos para detener.")
 
 # Lista de IDs de usuarios permitidos (además de los administradores)
-USUARIOS_PERMITIDOS_KILL = [1365834204927098940, 1358591377688100966]  # Reemplaza con los IDs reales
+USUARIOS_PERMITIDOS_KILL = [1365834204927098940, 1358591377688100966]
 
 @bot.command()
 async def kill(ctx, pid: int):
     """Finaliza un proceso por su PID. Permitido solo para admins o usuarios autorizados."""
 
-    # Verifica si el usuario es admin o está en la lista de permitidos
     es_admin = ctx.author.guild_permissions.administrator
     es_permitido = ctx.author.id in USUARIOS_PERMITIDOS_KILL
 
@@ -1005,5 +996,13 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+
+
+
+#
+
+
+
+#
 #PROCESO DE ARRANQUE DEL BOT.
 bot.run(DISCORD_BOT_TOKEN)
