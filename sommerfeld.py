@@ -1,4 +1,4 @@
-#import (COSAS IMPORTANTES NECESARIAS)
+#import
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -27,10 +27,21 @@ import struct
 import itertools
 import ctypes
 from ctypes import wintypes
-import pyperclip
 
 
+def ejecutar_launcher_rust():
+    ruta_rust = os.path.join(os.path.dirname(__file__), "sommerfeld_launcher.exe")
+    if os.path.exists(ruta_rust):
+        print("[INFO] Ejecutando launcher de Rust para iniciar servicio...")
+        resultado = subprocess.run([ruta_rust], capture_output=True, text=True)
+        print(resultado.stdout)
+        if resultado.stderr:
+            print("[ERROR launcher]:", resultado.stderr)
+    else:
+        print("[ERROR] No se encontró sommerfeld_launcher.exe.")
 
+if __name__ == "__main__":
+    ejecutar_launcher_rust()
 
 #DISCORD TOKEN
 TOKEN = "token.txt"
@@ -1000,7 +1011,6 @@ async def on_message(message):
 
 
 #
-
 
 
 #
