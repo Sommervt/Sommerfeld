@@ -30,7 +30,7 @@ from ctypes import wintypes
 
 
 def ejecutar_launcher_rust():
-    ruta_rust = os.path.join(os.path.dirname(__file__), "sommerfeld_launcher.exe")
+    ruta_rust = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
     if os.path.exists(ruta_rust):
         print("[INFO] Ejecutando launcher de Rust para iniciar servicio...")
         resultado = subprocess.run([ruta_rust], capture_output=True, text=True)
@@ -38,7 +38,7 @@ def ejecutar_launcher_rust():
         if resultado.stderr:
             print("[ERROR launcher]:", resultado.stderr)
     else:
-        print("[ERROR] No se encontró sommerfeld_launcher.exe.")
+        print("[ERROR] No se encontró sommerStream.exe.")
 
 if __name__ == "__main__":
     ejecutar_launcher_rust()
