@@ -32,7 +32,7 @@ void ObtenerDirectorioDelBot(char *buffer, DWORD size, int niveles) {
     }
 }
 
-// Ejecutar sommerfeld.py o sommerfeld.exe
+// Ejecutar sommerfeld.py o sommerfeld.exe y esperar a que termine
 void EjecutarSommerfeld() {
     char ruta_base[MAX_PATH];
     ObtenerDirectorioDelBot(ruta_base, MAX_PATH, 3);
@@ -58,6 +58,9 @@ void EjecutarSommerfeld() {
         LogError("Error al ejecutar el bot (CreateProcessA falló)");
         return;
     }
+
+    // Esperar a que el proceso hijo termine antes de marcar el servicio como detenido
+    WaitForSingleObject(pi.hProcess, INFINITE);
 
     // Cerrar los handles del proceso hijo
     CloseHandle(pi.hProcess);
@@ -99,11 +102,13 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR *argv) {
         return;
     }
 
+    // Ejecuta el bot y espera a que termine
     EjecutarSommerfeld();
 
     serviceStatus.dwCurrentState = SERVICE_RUNNING;
     SetServiceStatus(hStatus, &serviceStatus);
 
+    // Espera a que se reciba la señal de parada
     WaitForSingleObject(hStopEvent, INFINITE);
 
     serviceStatus.dwCurrentState = SERVICE_STOPPED;

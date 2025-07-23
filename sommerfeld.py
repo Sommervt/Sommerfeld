@@ -1,33 +1,24 @@
-#import
 import discord
 from discord.ext import commands
 from discord import app_commands
 import os
-import re
 import threading
 import pygetwindow as gw
 import random
-import datetime
 import subprocess
 import asyncio
 import psutil
 import json
 import sys
-import re
 import time
 import sqlite3
-from datetime import datetime 
+from datetime import datetime
 from collections import defaultdict
 import screen_brightness_control as sbc
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 import pymem
-import struct
-import itertools
-import ctypes
-from ctypes import wintypes
-
 
 def ejecutar_launcher_rust():
     ruta_rust = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
@@ -1011,8 +1002,23 @@ async def on_message(message):
 
 
 #
+@bot.command()
+async def temp(ctx):
+    try:
+        resultado = subprocess.check_output(
+            ["./sommerfeld/temperature/windows.exe"],
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            shell=True,
+            text=True
+        ).strip()
 
-
+        if resultado and "No se pudo obtener la temperatura" not in resultado:
+            await ctx.send(f"🌡️ Temperatura actual: `{resultado}°C`")
+        else:
+            await ctx.send("⚠️ No se pudo obtener temperatura. Tu PC no tiene sensor compatible o no estás ejecutando como administrador.")
+    except Exception as e:
+        await ctx.send(f"❌ Error al ejecutar: {e}")
 #
 #PROCESO DE ARRANQUE DEL BOT.
 bot.run(DISCORD_BOT_TOKEN)
