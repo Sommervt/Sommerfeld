@@ -20,6 +20,7 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 import pymem
 
+#LAUNCHER
 def launcher():
     ruta = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
     if os.path.exists(ruta):
