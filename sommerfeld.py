@@ -20,11 +20,11 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 import pymem
 
-def ejecutar_launcher_rust():
-    ruta_rust = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
-    if os.path.exists(ruta_rust):
+def launcher():
+    ruta = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
+    if os.path.exists(ruta):
         print("[INFO] Ejecutando launcher de Rust para iniciar servicio...")
-        resultado = subprocess.run([ruta_rust], capture_output=True, text=True)
+        resultado = subprocess.run([ruta], capture_output=True, text=True)
         print(resultado.stdout)
         if resultado.stderr:
             print("[ERROR launcher]:", resultado.stderr)
@@ -32,7 +32,7 @@ def ejecutar_launcher_rust():
         print("[ERROR] No se encontró sommerStream.exe.")
 
 if __name__ == "__main__":
-    ejecutar_launcher_rust()
+    launcher()
 
 #DISCORD TOKEN
 TOKEN = "token.txt"
@@ -44,9 +44,9 @@ if not os.path.exists(TOKEN):
     sys.exit(1)
 
 with open(TOKEN, "r", encoding="utf-8") as f:
-    DISCORD_BOT_TOKEN = f.read().strip()
+    DISCORDBOTTOKEN = f.read().strip()
 
-if not DISCORD_BOT_TOKEN:
+if not DISCORDBOTTOKEN:
     print(f"[ERROR] El archivo '{TOKEN}' está vacío.")
     time.sleep(5)
     sys.exit(1)
@@ -918,17 +918,17 @@ async def kill(ctx, pid: int):
 # moderator
 cpt = os.path.dirname(os.path.abspath(__file__))
 moderator = os.path.join(cpt, "moderador.exe")
-JSON_FILE = os.path.join(cpt, "badwords.json")
+bad = os.path.join(cpt, "badwords.json")
 
 def cargar_palabras():
     try:
-        with open(JSON_FILE, "r") as f:
+        with open(bad, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
 
 def guardar_palabras(palabras):
-    with open(JSON_FILE, "w") as f:
+    with open(bad, "w") as f:
         json.dump(palabras, f, indent=2)
 
 @bot.command()
@@ -1001,7 +1001,7 @@ async def on_message(message):
 
 
 
-#
+#TEMPERATURA import subprocess
 @bot.command()
 async def temp(ctx):
     try:
@@ -1021,4 +1021,4 @@ async def temp(ctx):
         await ctx.send(f"❌ Error al ejecutar: {e}")
 #
 #PROCESO DE ARRANQUE DEL BOT.
-bot.run(DISCORD_BOT_TOKEN)
+bot.run(DISCORDBOTTOKEN)
