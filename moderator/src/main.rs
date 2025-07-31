@@ -17,7 +17,7 @@ fn cargar_palabras(path: &str) -> Vec<String> {
 }
 
 fn main() {
-    let path_json = "badwords.json";
+    let path_json = "badwords/badwords.json";
     let palabras = cargar_palabras(path_json);
 
     let stdin = io::stdin();

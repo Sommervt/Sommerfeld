@@ -19,21 +19,72 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 import pymem
+import ctypes
+from llama_cpp import Llama
 
-#LAUNCHER
-def launcher():
-    ruta = os.path.join(os.path.dirname(__file__), "sommerStream.exe")
-    if os.path.exists(ruta):
-        print("[INFO] Ejecutando launcher de Rust para iniciar servicio...")
-        resultado = subprocess.run([ruta], capture_output=True, text=True)
-        print(resultado.stdout)
-        if resultado.stderr:
-            print("[ERROR launcher]:", resultado.stderr)
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except Exception:
+        return False
+
+def tarea_existente(nombre_tarea: str) -> bool:
+    try:
+        resultado = subprocess.run(
+            ["schtasks", "/query", "/tn", nombre_tarea],
+            capture_output=True, text=True
+        )
+        return resultado.returncode == 0
+    except Exception:
+        return False
+
+def crear_tarea_programada():
+    task_name = "SommerfeldBot"
+    launch_path = os.path.abspath("launch.exe")
+
+    cmd = [
+        "schtasks",
+        "/create",
+        "/tn", task_name,
+        "/tr", f'"{launch_path}"',
+        "/sc", "onlogon",
+        "/rl", "highest",
+        "/f"
+    ]
+
+    resultado = subprocess.run(cmd, capture_output=True, text=True)
+    if resultado.returncode == 0:
+        print(f"[OK] Tarea programada '{task_name}' creada correctamente.")
     else:
-        print("[ERROR] No se encontró sommerStream.exe.")
+        print(f"[ERROR] No se pudo crear la tarea programada.\nSTDOUT: {resultado.stdout}\nSTDERR: {resultado.stderr}")
+
+def ejecutar_launcher():
+    launch_path = os.path.abspath(os.path.join("launch.exe"))
+    if os.path.isfile(launch_path):
+        try:
+            subprocess.Popen([launch_path])
+            print("[INFO] launch.exe ejecutado correctamente.")
+        except Exception as e:
+            print(f"[ERROR] No se pudo ejecutar launch.exe: {e}")
+    else:
+        print(f"[WARN] No se encontró launch.exe en: {launch_path}")
+
+def main():
+    if not is_admin():
+        print("[ERROR] Ejecuta este programa como administrador para registrar la tarea.")
+        return
+
+    task_name = "SommerfeldBot"
+    if tarea_existente(task_name):
+        print("[INFO] La tarea ya existe. No se hará nada.")
+    else:
+        print("[INFO] La tarea no existe. Se procederá a crearla.")
+        crear_tarea_programada()
+        ejecutar_launcher()
 
 if __name__ == "__main__":
-    launcher()
+    main()
+
 
 #DISCORD TOKEN
 TOKEN = "token.txt"
@@ -916,91 +967,6 @@ async def kill(ctx, pid: int):
 
 
 
-# moderator
-cpt = os.path.dirname(os.path.abspath(__file__))
-moderator = os.path.join(cpt, "moderador.exe")
-bad = os.path.join(cpt, "badwords.json")
-
-def cargar_palabras():
-    try:
-        with open(bad, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-
-def guardar_palabras(palabras):
-    with open(bad, "w") as f:
-        json.dump(palabras, f, indent=2)
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def addbadword(ctx, palabra):
-    palabra = palabra.lower()
-    palabras = cargar_palabras()
-    if palabra not in palabras:
-        palabras.append(palabra)
-        guardar_palabras(palabras)
-        await ctx.send(f"✅ Palabra '{palabra}' añadida.")
-    else:
-        await ctx.send("⚠️ Esa palabra ya está en la lista.")
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def removebadword(ctx, palabra):
-    palabra = palabra.lower()
-    palabras = cargar_palabras()
-    if palabra in palabras:
-        palabras.remove(palabra)
-        guardar_palabras(palabras)
-        await ctx.send(f"✅ Palabra '{palabra}' eliminada.")
-    else:
-        await ctx.send("⚠️ Esa palabra no está en la lista.")
-
-def moderar_mensaje(mensaje: str) -> str:
-    print(f"Ejecutando moderador.exe con mensaje: {mensaje}")
-    if not os.path.exists(moderator):
-        print(f"⚠️ No se encontró el ejecutable: {moderator}")
-        return "permitido"
-    try:
-        proceso = subprocess.Popen(
-            [moderator],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding='utf-8',
-            cwd=cpt
-        )
-        salida, err = proceso.communicate(mensaje)
-        print(f"Salida Rust: {salida.strip()}")
-        if err:
-            print(f"Error Rust: {err.strip()}")
-        return salida.strip()
-    except Exception as e:
-        print(f"⚠️ Error al ejecutar moderador.exe: {e}")
-        return "permitido"
-
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    print(f"Mensaje recibido: {message.content}")
-    resultado = moderar_mensaje(message.content)
-    print(f"Resultado moderación: {resultado}")
-
-    if resultado == "bloqueado":
-        print(f"Borrando mensaje de {message.author} por palabra prohibida.")
-        await message.delete()
-        await message.channel.send(
-            f"🚫 {message.author.mention}, tu mensaje contenía palabras prohibidas.",
-            delete_after=5
-        )
-
-    await bot.process_commands(message)
-
-
-
 
 #TEMPERATURA import subprocess
 @bot.command()
@@ -1020,6 +986,158 @@ async def temp(ctx):
             await ctx.send("⚠️ No se pudo obtener temperatura. Tu PC no tiene sensor compatible o no estás ejecutando como administrador.")
     except Exception as e:
         await ctx.send(f"❌ Error al ejecutar: {e}")
-#
+
+
+#IA
+
+
+
+#moderator
+cpt = os.path.dirname(os.path.abspath(__file__))
+moderator = os.path.join(cpt, "badwords/moderator.exe")
+bad = os.path.join(cpt, "badwords/badwords.json")
+watchers_file = os.path.join(cpt, "badwords/badword_watchers.json")
+
+
+def cargar_palabras():
+    try:
+        with open(bad, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+def guardar_palabras(palabras):
+    os.makedirs(os.path.dirname(bad), exist_ok=True)
+    with open(bad, "w", encoding="utf-8") as f:
+        json.dump(palabras, f, indent=2)
+
+
+def cargar_watchers():
+    try:
+        with open(watchers_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+
+def guardar_watchers(watchers):
+    os.makedirs(os.path.dirname(watchers_file), exist_ok=True)
+    with open(watchers_file, "w", encoding="utf-8") as f:
+        json.dump(watchers, f, indent=2)
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def addbadword(ctx, *, palabra):
+    palabra = palabra.lower().strip()
+    palabras = cargar_palabras()
+    if palabra not in palabras:
+        palabras.append(palabra)
+        guardar_palabras(palabras)
+        await ctx.send(f"✅ Palabra '{palabra}' añadida.")
+    else:
+        await ctx.send("⚠️ Esa palabra ya está en la lista.")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def removebadword(ctx, *, palabra):
+    palabra = palabra.lower().strip()
+    palabras = cargar_palabras()
+    if palabra in palabras:
+        palabras.remove(palabra)
+        guardar_palabras(palabras)
+        await ctx.send(f"✅ Palabra '{palabra}' eliminada.")
+    else:
+        await ctx.send("⚠️ Esa palabra no está en la lista.")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def userbw(ctx, miembro: discord.Member):
+    watchers = cargar_watchers()
+    if miembro.id not in watchers:
+        watchers.append(miembro.id)
+        guardar_watchers(watchers)
+        await ctx.send(f"👁️‍🗨️ {miembro.mention} ha sido registrado para recibir alertas de malas palabras.")
+    else:
+        await ctx.send(f"⚠️ {miembro.mention} ya está registrado.")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def removebw(ctx, miembro: discord.Member):
+    watchers = cargar_watchers()
+    if miembro.id in watchers:
+        watchers.remove(miembro.id)
+        guardar_watchers(watchers)
+        await ctx.send(f"❌ {miembro.mention} ha sido eliminado de las alertas de malas palabras.")
+    else:
+        await ctx.send(f"⚠️ {miembro.mention} no estaba registrado.")
+
+
+def moderar_mensaje(mensaje: str) -> str:
+    print(f"[Moderador] Ejecutando moderador.exe con mensaje: {mensaje}")
+    if not os.path.exists(moderator):
+        print(f"[Moderador] ⚠️ No se encontró el ejecutable: {moderator}")
+        return "permitido"
+    try:
+        proceso = subprocess.Popen(
+            [moderator],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding='utf-8',
+            cwd=cpt
+        )
+        salida, err = proceso.communicate(mensaje)
+        print(f"[Moderador] Salida Rust: {salida.strip()}")
+        if err:
+            print(f"[Moderador] Error Rust: {err.strip()}")
+        return salida.strip()
+    except Exception as e:
+        print(f"[Moderador] ⚠️ Error al ejecutar moderador.exe: {e}")
+        return "permitido"
+
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    print(f"[Moderador] Mensaje recibido: {message.content}")
+    resultado = moderar_mensaje(message.content)
+    print(f"[Moderador] Resultado moderación: {resultado}")
+
+    if resultado == "bloqueado":
+        print(f"[Moderador] Borrando mensaje de {message.author} por palabra prohibida.")
+        await message.delete()
+        await message.channel.send(
+            f"🚫 {message.author.mention}, tu mensaje contenía palabras prohibidas.",
+            delete_after=5
+        )
+
+
+        watchers = cargar_watchers()
+        if watchers:
+            palabra_detectada = next(
+                (p for p in cargar_palabras() if p in message.content.lower()),
+                "una palabra prohibida"
+            )
+            for watcher_id in watchers:
+                user = bot.get_user(watcher_id)
+                if user:
+                    try:
+                        await user.send(
+                            f"⚠️ **Alerta de moderación**\n"
+                            f"👤 Usuario: {message.author} (`{message.author.id}`)\n"
+                            f"📌 Canal: {message.channel.mention}\n"
+                            f"🕒 Fecha: {message.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                            f"🧠 Palabra detectada: **{palabra_detectada}**"
+                        )
+                    except Exception as e:
+                        print(f"[Moderador] ❌ No se pudo notificar a {user}: {e}")
+
+    await bot.process_commands(message)
 #PROCESO DE ARRANQUE DEL BOT.
 bot.run(DISCORDBOTTOKEN)
